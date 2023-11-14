@@ -1,11 +1,6 @@
 {
     "routes": [
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "./.*",
-            "dest": "/"
-        }
+        {"handle": "filesystem"},
+        {"src": "/.*","dest": "/"}
     ]
 }
