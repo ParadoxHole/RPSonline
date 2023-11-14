@@ -42,7 +42,7 @@
           <q-btn label="Submit" type="submit" color="primary" style="width: 100%;" />
         </div>
         <div>
-          <text-caption class="text-cyan-8">Not registered?
+          <text-caption class="text-cyan-8">register?
             <a href="/register">Create an Account</a>
           </text-caption>
         </div>
