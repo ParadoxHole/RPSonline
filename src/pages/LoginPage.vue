@@ -1,5 +1,6 @@
 <template>
   <q-page class="flex flex-center">
+    <FloatingHeader />
     <q-card dark bordered class="bg-grey-2 my-card q-px-md p-py-md">
     <div class="flex flex-center">
       <q-icon name="account_circle" color="grey-6" size="4rem" />
@@ -56,7 +57,12 @@ import { defineComponent } from 'vue'
 import { useLoginUserStore } from "../stores/loginUserStore" 
 import { Notify } from 'quasar'
 import { requiredValidate } from "../utils/validations";
+import FloatingHeader from "../components/Sidebar.vue";
+
 export default defineComponent({
+  components: {
+      FloatingHeader ,
+  },
   name: 'LoginPage',
   data(){
     return{
