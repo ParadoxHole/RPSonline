@@ -75,7 +75,7 @@
         showGif: [false, false, false],
         selectedImage: -1, // Initialize with -1 to indicate no selection
         imageNames: ["Paper", "Scissors", "Rock"], // Names of the images
-        GameState: 'winMatch', // Default, Searching, Found, Result, Waiting, winMatch, loseMatch
+        GameState: 'Default', // Default, Searching, Found, Result, Waiting, winMatch, loseMatch
         timer:20,
         P1Score: 0,
         P1Choice: null,
