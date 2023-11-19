@@ -7,7 +7,7 @@
       <div class="content-container">
         <div class="content">
           <h1>PLAY THE SIMPLEST GAME WHERE THE DUMBEST PLAYER CAN WIN AGAINST THE SMARTEST</h1>
-          <button class="play-button">Play Now</button>
+          <button class="play-button" @click="play">Play Now</button>
         </div>
       </div>
     </div>
@@ -19,6 +19,11 @@ import FloatingHeader  from "../components/Sidebar.vue";
 export default {
   components: {
       FloatingHeader ,
+  },
+  methods: {
+    play() {
+      this.$router.push("/play");
+    },
   },
 };
 </script>

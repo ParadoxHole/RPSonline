@@ -1,7 +1,6 @@
 <template>
   <q-page class="flex flex-center">
-    <FloatingHeader />
-    <q-card dark bordered class="bg-grey-2 my-card q-px-md p-py-md">
+    <q-card class="bg-grey-2 my-card q-px-md p-py-md">
     <div class="flex flex-center">
       <q-icon name="account_circle" color="grey-6" size="4rem" />
     </div>
@@ -42,7 +41,7 @@
           <q-btn label="Submit" type="submit" color="primary" style="width: 100%;" />
         </div>
         <div>
-          <text-caption class="text-cyan-8">register?
+          <text-caption class="text-cyan-8">Not registered?
             <a href="/register">Create an Account</a>
           </text-caption>
         </div>
@@ -57,12 +56,7 @@ import { defineComponent } from 'vue'
 import { useLoginUserStore } from "../stores/loginUserStore" 
 import { Notify } from 'quasar'
 import { requiredValidate } from "../utils/validations";
-import FloatingHeader from "../components/Sidebar.vue";
-
 export default defineComponent({
-  components: {
-      FloatingHeader ,
-  },
   name: 'LoginPage',
   data(){
     return{
@@ -101,6 +95,7 @@ export default defineComponent({
           else{
             this.storeLogUser.avatar = "default-avatar.png";
           }
+          this.$router.push("/user");
         }
       })
       .catch((err)=>{
@@ -110,7 +105,7 @@ export default defineComponent({
           message: "Invalid username or password"
         });
       });
-      this.$router.push("/user");
+      this.$refs.loginForm.reset();
     }
   }
 })

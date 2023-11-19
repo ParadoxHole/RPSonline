@@ -1,7 +1,7 @@
 <template>
   <div class="floating-header">
     <q-list padding>
-      <router-link to="/home" class="icons">
+      <router-link to="" class="icons">
         <q-item clickable>
           <q-item-section avatar>
             <q-icon name="home" size="4em" />

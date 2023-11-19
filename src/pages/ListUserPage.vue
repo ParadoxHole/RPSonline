@@ -1,5 +1,6 @@
 <template>
   <q-page class="flex flex-center">
+    <FloatingHeader />  
     <div v-if="dataReady">
       <!-- Data completed -->
       <q-table
@@ -144,7 +145,12 @@ import { defineComponent } from "vue";
 import { useLoginUserStore } from "../stores/loginUserStore";
 import { Notify } from "quasar";
 import DialogComponent from "src/components/DialogComponent.vue";
+import FloatingHeader from "../components/Sidebar.vue";
+
 export default defineComponent({
+  components: {
+      FloatingHeader ,
+  },
   name: "ListUserPage",
   data() {
     return {
@@ -215,7 +221,7 @@ export default defineComponent({
             message: "Unauthorized",
           });
           this.storeLogUser.clearStorage();
-          this.$router.push("/");
+          this.$router.push("/login");
         });
     },
     editRecord(record) {
@@ -241,7 +247,7 @@ export default defineComponent({
             });
             if (this.storeLogUser.userid == res.data.id) {
               this.storeLogUser.clearStorage();
-              this.$router.push("/");
+              this.$router.push("/login");
             } else {
               this.getAllUsers();
             }
