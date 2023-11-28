@@ -133,6 +133,15 @@ export default defineComponent({
       });
       this.$router.push("/");
     }
+  },
+  mounted(){
+    this.toggleLeftDrawer();
   }
 })
 </script>
+
+<style>
+.q-layout {
+  background-color: #fbea04;
+}
+</style>

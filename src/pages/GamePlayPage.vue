@@ -23,7 +23,7 @@
       </div>
       <div class="content-container">
         <div class="content">
-          
+          <h2>Opponent: {{ this.opponentName }} rating : {{ this.opponentRate }}</h2>
           <h1>Your opponent is choosing...</h1>
           <h1 v-if="this.selectedImage !== -1">You chose: {{ imageNames[this.selectedImage] }}</h1>
           <h1 v-if="this.selectedImage == -1">Choose a sign or let the chance chose</h1>
@@ -33,17 +33,37 @@
       </div>
     </div>
     <div v-if="GameState== 'Default'" class="default-container">
-      <button class="button" @click="SearchPlayer">Search For Other Player</button>
+      <button class="button" @click="searchPlayer">Search For Other Player</button>
     </div>
     <div v-if="GameState=='Searching'" class="searching">
       <h1>Waiting for another player...</h1>
-      <q-linear-progress dark rounded indeterminate color=#2e2c2c class="q-mt-sm" />
+      <q-linear-progress indeterminate color="secondary" class="q-mt-sm" />
       <q-space />
+      <button class="button" @click=leave>Cancel</button>
     </div>
-    <div v-if="GameState== 'Result'" class="searching">
-      <h2>you - {{ P1Score }} || {{ P2Score }} - him </h2>
+    <div v-if="GameState === 'Result'" class="result-container">
       <h2>{{ result }}</h2>
+      <div class="choice-container">
+        <div class="player-choice">
+          <h2>Your Choice : {{ this.P1Choice }}</h2>
+          <img v-if="P1Choice== 'Rock'" src="../../public/RPS-Rock.gif" alt="Rock" />
+          <img v-else-if="P1Choice== 'Paper'" src="../../public/RPS-Paper.gif" alt="Paper" />
+          <img v-else-if="P1Choice== 'Scissors'" src="../../public/RPS-Scissors.gif" alt="Scissors" />
+        </div>
+        <div class="player-choice">
+          <h2>Opponent's Choice : {{ this.P2Choice }}</h2>
+          <img v-if="P2Choice== 'Rock'" src="../../public/RPS-Rock.gif" alt="Rock" />
+          <img v-else-if="P2Choice== 'Paper'" src="../../public/RPS-Paper.gif" alt="Paper" />
+          <img v-else-if="P2Choice== 'Scissors'" src="../../public/RPS-Scissors.gif" alt="Scissors" />
+        </div>
+      </div>
+      <div class="score-container">
+        <h2>{{ P1Score }}</h2>
+        <h2>Score</h2>
+        <h2>{{ P2Score }}</h2>
+      </div>
     </div>
+
     <div v-if="GameState== 'Waiting'" class="default-container">
       <h1>Waiting for the other player choice</h1>
     </div>
@@ -77,6 +97,9 @@
         imageNames: ["Paper", "Scissors", "Rock"], // Names of the images
         GameState: 'Default', // Default, Searching, Found, Result, Waiting, winMatch, loseMatch
         timer:20,
+        opponentId: null,
+        opponentRate: null,
+        opponentName: null,
         P1Score: 0,
         P1Choice: null,
         P2Score: 0,
@@ -100,47 +123,87 @@
           this.selectedImage = index; // Set the selected image
         }
       },
-
-      SearchPlayer() {
-        // Initial check
-        this.createMatch();
-
-        const intervalId = setInterval(() => {
-          this.checkPlayer();
-        }, 1000);
-        this.intervalId = intervalId;
+      getImagePath(choice) {
+        return `../../public/${choice}HandImage.png`;
       },
-
-      createMatch() {
+      leave() {
+        console.log("leave");
+        this.GameState = "Default";
+        clearInterval(this.intervalId);
         this.$api
-          .post("/match/join/" + this.storeLogUser.userid)
+          .delete("/match/leave/" + this.storeLogUser.userid)
           .then((response) => {
-            if (response.data.data.waiting) {
-              this.GameState = "Searching";
-            } else {
-              this.GameState = "Found";
-            }
+            console.log(response);
           })
           .catch((err) => {
             console.log(err);
           });
       },
-      checkPlayer(){
-        this.$api
-          .get("/match/checkPlayer/" + this.storeLogUser.userid)
+      searchPlayer() {
+        // Initial check
+        this.createMatch();
+        console.log("Searching for a player...");
+        this.intervalId = setInterval(() => {
+          this.checkPlayer();
+        }, 1000);
+      },
+
+      createMatch() {
+        this.$api.post("/match/join/" + this.storeLogUser.userid)
           .then((response) => {
-            console.log(response.data.data);
-            if (response.data.data == false) {
-              this.GameState = "Searching";
-              console.log("Still searching");
+            if (response.data.data.waiting == true) {
+              console.log(response)
+              this.handleSearchingState(response.data);
             } else {
-              this.GameState = "Found";
-              clearInterval(this.intervalId); // Stop the interval
-              console.log("Found");
+              console.log(response)
+              this.handleFoundState(response.data);
             }
           })
           .catch((err) => {
-            console.log(err);
+            console.error(err);
+          });
+      },
+
+      checkPlayer() {
+        this.$api.get("/match/checkPlayer/" + this.storeLogUser.userid)
+          .then((response) => {
+            if (response.data.data.waiting == false) {
+              this.handleFoundState(response.data);
+              clearInterval(this.intervalId); // Stop the interval
+            } else {
+              this.handleSearchingState(response.data);
+            }
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      },
+
+      handleSearchingState(data) {
+        this.GameState = "Searching";
+        console.log("Searching:", data);
+      },
+
+      handleFoundState(data) {
+        this.GameState = "Found";
+        console.log("Found:", data);
+        
+        //store the opponent id and rate
+        if(data.data.matchData.playerOneId == this.storeLogUser.userid){
+          this.opponentId = data.data.matchData.playerTwoId;
+        }else{
+          this.opponentId = data.data.matchData.playerOneId;
+        }
+        const headers = {
+        "x-access-token": this.storeLogUser.accessToken,
+        };
+        this.$api.get("/auth/get/" + this.opponentId, { headers })
+          .then((response) => {
+            this.opponentRate = response.data.rating;
+            this.opponentName = response.data.userName;
+          })
+          .catch((err) => {
+            console.error(err);
           });
       },
 
@@ -175,9 +238,10 @@
                           console.log(response);
                           if (response.data.data != "Both players have not made a move yet.") {
                             this.moveResult(response);
-                            clearInterval(intervalOPChoice);
+                            clearInterval(this.intervalOPChoice);
                           }});
                     }, 1000);
+                    this.intervalOPChoice = intervalOPChoice;
                 } else {
                   this.moveResult(response);
                 }
@@ -187,13 +251,13 @@
             });
       },
       moveResult(response) {
-      if (response.data.data.playerOneId || response.data.data.playerTwoId) {
+      if (response.data.data.resultType == null) {
         // The match is not fully finished
         if (this.storeLogUser.userid == response.data.data.playerOneId) {
           this.P1Score = response.data.data.PlayerOneScore;
           this.P2Score = response.data.data.PlayerTwoScore;
-          this.P1Choice = response.data.data.PlayerOneChoice;
-          this.P2Choice = response.data.data.PlayerTwoChoice;
+          this.P1Choice = response.data.data.PreviousPOChoice;
+          this.P2Choice = response.data.data.PreviousPTChoice;
           if (response.data.data.output == "P1Win") {
             this.result = "You Win";
           } else if (response.data.data.output == "P2Win") {
@@ -204,8 +268,8 @@
         } else {
           this.P1Score = response.data.data.PlayerTwoScore;
           this.P2Score = response.data.data.PlayerOneScore;
-          this.P1Choice = response.data.data.PlayerTwoChoice;
-          this.P2Choice = response.data.data.PlayerOneChoice;
+          this.P1Choice = response.data.data.PreviousPTChoice;
+          this.P2Choice = response.data.data.PreviousPOChoice;
           if (response.data.data.output == "P2Win") {
             this.result = "You Win";
           } else if (response.data.data.output == "P1Win") {
@@ -221,16 +285,37 @@
         this.selectedImage = -1;
       } else {
         // The match is fully finished
-        if (response.data.data == this.storeLogUser.userid) {
-          this.GameState = "winMatch";
+        if (response.data.data.playerOneId == this.storeLogUser.userid){
+          if (response.data.data.resultType == "P1Win") {
+            this.GameState = "winMatch";
+          } else {
+            this.GameState = "loseMatch";
+          }
         } else {
-          this.GameState = "loseMatch";
+          if (response.data.data.resultType == "P2Win") {
+            this.GameState = "winMatch";
+          } else {
+            this.GameState = "loseMatch";
+          }
         }
+        this.opponentId = null;
+        this.opponentRate = null;
+        this.opponentName = null;
+        this.P1Score = 0;
+        this.P1Choice = null;
+        this.P2Score = 0;
+        this.P2Choice = null;
       }
     },
     Home(){
       this.$router.push("/");
     },
+    },
+    unmounted() {
+      clearInterval(this.intervalId);
+      clearInterval(this.intervalOPChoice);
+      clearInterval(this.intervalResult);
+      this.leave();
     },
   };
   </script>
@@ -252,6 +337,11 @@
     justify-content: center;
     align-items: center;
     background-color: #fbea04;
+    margin-top: 10px ;
+  }
+  .q-linear-progress {
+    width: 50%;
+    margin-bottom: 50px;
   }
   
   .image-container {
@@ -335,13 +425,46 @@
     transition: transform 0.3s ease-in-out;
     outline: #2e2c2c;
   }
-  .selected {
-    outline: 2px solid black; /* Add an outline when selected */
-    border-radius: 50%;
-  }
+
   .bottom-images {
     display: flex;
     justify-content: center;
   }
+  .result-container {
+  text-align: center;
+  color: #fbea04;
+  background-color: #fbea04;
+
+}
+
+.choice-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.player-choice {
+  text-align: center;
+}
+
+.player-choice h2 {
+  font-size: 20px;
+}
+
+.player-choice img {
+  width: 200px;
+  height: 200px;
+}
+
+.score-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.score-container h2 {
+  font-size: 30px;
+  margin: 0;
+}
+
   </style>
   

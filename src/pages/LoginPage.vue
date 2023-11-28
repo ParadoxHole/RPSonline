@@ -1,4 +1,5 @@
 <template>
+  <FloatingHeader />
   <q-page class="flex flex-center">
     <q-card class="bg-grey-2 my-card q-px-md p-py-md">
     <div class="flex flex-center">
@@ -56,7 +57,12 @@ import { defineComponent } from 'vue'
 import { useLoginUserStore } from "../stores/loginUserStore" 
 import { Notify } from 'quasar'
 import { requiredValidate } from "../utils/validations";
+import FloatingHeader from "../components/Sidebar.vue";
+
 export default defineComponent({
+  components: {
+      FloatingHeader,
+  },
   name: 'LoginPage',
   data(){
     return{
@@ -95,7 +101,7 @@ export default defineComponent({
           else{
             this.storeLogUser.avatar = "default-avatar.png";
           }
-          this.$router.push("/user");
+          this.$router.push("/");
         }
       })
       .catch((err)=>{
