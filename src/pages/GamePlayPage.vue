@@ -199,8 +199,9 @@
         };
         this.$api.get("/auth/get/" + this.opponentId, { headers })
           .then((response) => {
-            this.opponentRate = response.data.rating;
-            this.opponentName = response.data.userName;
+            console.log(response);
+            this.opponentRate = response.data.user.rating;
+            this.opponentName = response.data.user.userName;
           })
           .catch((err) => {
             console.error(err);
@@ -256,28 +257,33 @@
         if (this.storeLogUser.userid == response.data.data.playerOneId) {
           this.P1Score = response.data.data.PlayerOneScore;
           this.P2Score = response.data.data.PlayerTwoScore;
-          this.P1Choice = response.data.data.PreviousPOChoice;
-          this.P2Choice = response.data.data.PreviousPTChoice;
-          if (response.data.data.output == "P1Win") {
+          this.P1Choice = response.data.data.PlayerOneChoice;
+          this.P2Choice = response.data.data.PlayerTwoChoice;
+          if (response.data.data.gameResult == "P1Win") {
             this.result = "You Win";
-          } else if (response.data.data.output == "P2Win") {
+            this.P1Score ++;
+          } else if (response.data.data.gameResult == "P2Win") {
             this.result = "You Lose";
+            this.P2Score ++;
           } else {
             this.result = "Draw";
           }
         } else {
           this.P1Score = response.data.data.PlayerTwoScore;
           this.P2Score = response.data.data.PlayerOneScore;
-          this.P1Choice = response.data.data.PreviousPTChoice;
-          this.P2Choice = response.data.data.PreviousPOChoice;
-          if (response.data.data.output == "P2Win") {
+          this.P1Choice = response.data.data.PlayerTwoChoice;
+          this.P2Choice = response.data.data.PlayerOneChoice;
+          if (response.data.data.gameResult == "P2Win") {
             this.result = "You Win";
-          } else if (response.data.data.output == "P1Win") {
+            this.P2Score ++;
+          } else if (response.data.data.gameResult == "P1Win") {
             this.result = "You Lose";
+            this.P1Score ++;
           } else {
             this.result = "Draw";
           }
         }
+        console.log("P1Score: " + this.P1Score + " P2Score: " + this.P2Score);
         setTimeout(() => {
           this.GameState = "Found";
         }, 5000);
