@@ -28,6 +28,15 @@
         </div>
       </div>
     </div>
+
+    <div class="match-history">
+      <div class="match-title">Match History</div>
+      <ul>
+        <li v-for="match in matchHistory" :key="match.id">
+          You played against {{ match.opponent }} and you {{ match.result }} on {{ match.startTime }}
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
@@ -50,6 +59,7 @@ export default {
         losses: 0,
         draws: 0,
       },
+      matchHistory: [], // Empty array to store match history
       storeLogUser: useLoginUserStore(),
     };
   },
@@ -59,17 +69,18 @@ export default {
   methods: {
     waitForUserId() {
       setTimeout(() => {
-          this.fetchUserData();
-        }, 2000); // Adjust the delay (in milliseconds) as needed
+        this.fetchUserData();
+      }, 2000); // Adjust the delay (in milliseconds) as needed
     },
     fetchUserData() {
       const headers = {
         "x-access-token": this.storeLogUser.accessToken,
-        };
-      this.$api.get("/auth/get/"  + this.storeLogUser.userid, { headers })
+      };
+      this.$api
+        .get("/auth/get/" + this.storeLogUser.userid, { headers })
         .then((response) => {
           if (response.status === 200) {
-            // Update user data 
+            // Update user data
             this.user = {
               fullname: response.data.user.fullname,
               rating: response.data.user.rating,
@@ -83,6 +94,17 @@ export default {
         })
         .catch((error) => {
           console.error("Error fetching user data:", error);
+        });
+      this.$api
+        .get("/match/matchHistory/" + this.storeLogUser.userid)
+        .then((response) => {
+          if (response.status === 200) {
+            // Update match history
+            this.matchHistory = response.data;
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching match history:", error);
         });
     },
   },
@@ -196,5 +218,29 @@ export default {
       font-family: Prottotype;
       src: url('../../public/fonts/prototype/Prototype.ttf');
     }
+    .match-history {
+    margin-top: 20px;
+  }
+
+  .match-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #34312f;
+    text-shadow: 5px 5px 3px #ead705;
+    margin-bottom: 10px;
+  }
+
+  .match-history ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .match-history li {
+    font-size: 18px;
+    font-family: Prottotype;
+    color: #34312f;
+    text-shadow: 5px 5px 3px #ead705;
+    margin-bottom: 5px;
+  }
   </style>
   
